@@ -1,0 +1,228 @@
+EnrollnMent Number : 202106100110123
+Name : Pranav Rangunwala
+
+
+
+======================================================================================================
+=============================== OTSU BINARIZATION ====================================================
+======================================================================================================
+ 
+import cv2
+import numpy as np
+
+image = cv2.imread('/bmiit/stud/202106100110123/Downloads/Binary.jpeg', 0)
+
+OTSU_THRESH, inverted_binary_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+# otsu_threshold, inverted_binary_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+print(f'Dynamically computed Otsu threshold: {OTSU_THRESH}')
+
+# Show the original grayscale image
+cv2.imshow('Grayscale Image', image)
+
+# Show the binary image after Otsu's thresholding with inversion
+cv2.imshow('Inverted Otsu Binarization', inverted_binary_image)
+
+# Wait for a key press and close all windows
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+======================================================================================================
+================================= BLURRING FILTER ====================================================
+======================================================================================================
+
+import cv2
+import numpy as np
+
+
+def blur(image, kernel_size):
+    
+    pad = kernel_size
+    
+    padded_image = cv2.copyMakeBorder(image, pad, pad, pad, pad, cv2.BORDER_REPLICATE)
+
+    blurred_image = np.zeros_like(image)
+
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+
+            kernel = padded_image[i:i + kernel_size, j:j + kernel_size]
+
+            blurred_image[i, j] = np.mean(kernel)
+
+    return blurred_image
+
+image = cv2.imread('/bmiit/stud/202106100110123/Downloads/Binary.jpeg', cv2.IMREAD_GRAYSCALE)
+
+blurred_image_1 = blur(image, 5)
+
+cv2.imshow('Original Image', image)
+cv2.imshow('Blurred Image', blurred_image_1)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
+
+======================================================================================================
+================================= Boundry/Edge Detection =============================================
+======================================================================================================
+
+
+import cv2
+import numpy as np
+
+image = cv2.imread('/bmiit/stud/202106100110123/Downloads/Binary.jpeg', cv2.IMREAD_GRAYSCALE)
+
+image = cv2.GaussianBlur(image, (7,7), 0)
+
+hori_mask = np.array([[-1, -1, -1],
+                            [ 2,  2,  2],
+                            [-1, -1, -1]])
+
+ver_mask = np.array([[-1,  2, -1],
+                          [-1,  2, -1],
+                          [-1,  2, -1]])
+
+diag_45_mask = np.array([[-1, -1,  2],
+                         [-1,  2, -1],
+                         [ 2, -1, -1]])
+
+diag_minus_45_mask = np.array([[ 2, -1, -1],
+                               [-1,  2, -1],
+                               [-1, -1,  2]])
+
+response_horizontal = cv2.filter2D(image, -1, hori_mask)
+response_vertical = cv2.filter2D(image, -1, ver_mask)
+response_45 = cv2.filter2D(image, -1, diag_45_mask)
+response_minus_45 = cv2.filter2D(image, -1, diag_minus_45_mask)
+
+responses = np.stack([response_horizontal, response_vertical, response_45, response_minus_45], axis=0)
+
+max_response = np.max(responses, axis=0)
+
+OTSU_THRESH, binary_image = cv2.threshold(max_response, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+cv2.imshow('Detected Lines', max_response)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
+
+======================================================================================================
+================================= CLOSING MORPHOLOGICAL OPERATION ====================================
+======================================================================================================
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+input_image = cv2.imread('/bmiit/stud/202106100110123/Downloads/Closing.jpg')  # Replace with your image path
+
+gray_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+
+_, binary_image = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY)
+
+structuring_element = np.ones((5, 5), np.uint8)  # 5x5 square SE
+
+dile_Image = cv2.dilate(binary_image, structuring_element, iterations=3)
+Closing_image = cv2.erode(dile_Image, structuring_element, iterations=3)
+
+
+cv2.imshow("Original Image", binary_image)
+cv2.imshow("Closed Image",Closing_image)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
+======================================================================================================
+================================= OPENING MORPHOLOGICAL OPERATION ====================================
+======================================================================================================
+
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+input_image = cv2.imread('/bmiit/stud/202106100110123/Downloads/Opening_2.jpg')  
+
+gray_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+
+_, binary_image = cv2.threshold(gray_image, 127, 255, cv2.THRESH_BINARY)
+
+structuring_element = np.ones((5, 5), np.uint8)  # 5x5 square SE
+
+Erod_image = cv2.erode(binary_image, structuring_element, iterations=3)
+Opening_Image = cv2.dilate(Erod_image, structuring_element, iterations=3)
+
+
+cv2.imshow("Original Image", binary_image)
+cv2.imshow("Opening Image",Opening_Image)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+======================================================================================================
+============================== INTERNAL/EXTERNAL BOUNDRY USING MORPHOLOGY ============================
+======================================================================================================
+
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+image = cv2.imread('/bmiit/stud/202106100110123/Downloads/BB.jpg', cv2.IMREAD_GRAYSCALE)
+
+_, binary_image = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+
+structuring_element = np.ones((5, 5), np.uint8)
+
+Erod_image = cv2.erode(binary_image, structuring_element, iterations=2)
+Dile_image = cv2.dilate(binary_image, structuring_element, iterations=2)
+
+internal = cv2.subtract(binary_image, Erod_image)
+external = cv2.subtract(Dile_image, binary_image)
+
+cv2.imshow("Original Image", binary_image)
+cv2.imshow("Internal Boundry", internal)
+cv2.imshow("External Boundry", external)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
+
+======================================================================================================
+====================================== COMPONENT-LEBELING ============================================
+======================================================================================================
+
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+image = cv2.imread('/bmiit/stud/202106100110123/Downloads/cc.png', cv2.IMREAD_GRAYSCALE)
+
+_, binary_image = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+
+num_labels, labels_im = cv2.connectedComponents(binary_image)
+
+colors = np.random.randint(0, 255, size=(num_labels, 3), dtype=np.uint8)
+colored_labels = colors[labels_im]
+
+plt.title("Original Binary Image")
+plt.imshow(binary_image, cmap='gray')
+plt.axis('off')
+plt.show()
+
+plt.title(f"Labeled Image (Total Components: {num_labels})")
+plt.imshow(colored_labels)
+plt.axis('off')
+
+plt.show()
