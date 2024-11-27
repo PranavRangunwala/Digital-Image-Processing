@@ -1,0 +1,184 @@
+Enrollment Number = 202106100110123
+
+Question - 1
+
+import cv2 as cv
+import numpy as np
+import matplotlib.pyplot as plt
+
+image = cv.imread("/bmiit/exam/exam001/Downloads/img01.jpg",0)
+
+hist = cv.calcHist([image], [0], None, [256], [0,256])
+
+normaliza_hist = hist/hist.sum()
+
+Dark_Pixel_Percentage = np.sum(normaliza_hist[:128])*100
+Bright_Pixel_Percentage = np.sum(normaliza_hist[128:])*100
+
+img_std = np.std(image)
+img_brightness = np.mean(image)
+
+if img_std == 0:
+    if img_brightness == 0:
+        Bright_Message = "Very Dark"
+    elif img_brightness == 255:
+        Bright_Message = "Very Bright"
+    else:
+        Bright_Message = "Uniform Gray"
+    Contrast_Message = "No Contrast"
+else:
+    Balance_Thres = 10
+    if abs(Dark_Pixel_Percentage - Bright_Pixel_Percentage) <= Balance_Thres:
+        Bright_Message = "Balanced"
+    elif Dark_Pixel_Percentage > 80:
+        Bright_Message="Very Dark"
+    elif Bright_Pixel_Percentage > 80:
+        Bright_Message = "Very Bright"
+    elif Dark_Pixel_Percentage > Bright_Pixel_Percentage:
+        Bright_Message = "Dark"
+    elif Bright_Pixel_Percentage > Dark_Pixel_Percentage:
+        Bright_Message = "Bright"
+
+Low_Contrast_Thres = 30
+High_Contrast_Thres = 60
+
+if img_std < Low_Contrast_Thres:
+    Contrast_Message = "low contrast"
+elif Low_Contrast_Thres <= img_std < High_Contrast_Thres:
+    Contrast_Message = "moderate contrast"
+else:
+    Contrast_Message = "high contrast"
+
+print(img_std)
+print(f"Image is {Bright_Message} And Contrast Is {Contrast_Message}")
+
+plt.Figure()
+plt.xlabel("Bins")
+plt.ylabel("Frequency")
+plt.plot(hist)
+plt.xlim([0,256])
+plt.show()
+
+
+====================================================================================================================
+====================================================================================================================
+
+Question - 2
+
+import cv2 as cv
+import numpy as np
+from matplotlib import pyplot as plt
+
+r1,c1 = 20,5
+r2,c2 = 40,50
+
+def Contrast_Streaching(image , r1 , r2 , c1 , c2):
+    
+    Streaced_Img = np.zeros_like(image)
+    
+    mask1 = (image <= r1)
+    Streaced_Img[mask1] = (c1/r1)*(image[mask1]-0) + 0
+    
+    mask2 = (image > r1) & (image <= r2)
+    Streaced_Img[mask2] = ((c2-c1)/(r2-r1))*(image[mask2]-r1) + c1
+    
+    mask3 = (image > r2)
+    Streaced_Img[mask3] = ((255-c2)/(255-r2))*(image[mask3]-r2) + c2
+    
+    Output_CLip = np.clip(Streaced_Img,0,255)
+    
+    return Output_CLip.astype(np.uint8)
+
+
+image = cv.imread("/bmiit/exam/exam001/Downloads/img07.jpg",0)
+output_image = Contrast_Streaching(image,40,130,90,220)
+
+original_hist = cv.calcHist(image, [0], None, [256], [0,256])
+hist = cv.calcHist(output_image, [0], None, [256], [0,256])
+
+cv.imshow("Original", image)
+cv.imshow("Streached Image", output_image)
+
+plt.Figure()
+plt.xlabel("Bins")
+plt.ylabel("Frequency")
+plt.plot(original_hist)
+plt.show()
+
+plt.Figure()
+plt.xlabel("Bins")
+plt.ylabel("Frequency")
+plt.plot(hist)
+plt.show()
+
+cv.waitKey(0)
+cv.destroyAllWindows()
+
+
+====================================================================================================================
+====================================================================================================================
+
+Question - 3
+
+(1)
+
+import cv2 as cv
+import numpy as np
+from matplotlib import pyplot as plt
+
+def Img_Clipping(image , x , y):
+    
+    old_min_range = np.min(image)
+    old_max_range = np.max(image)
+    
+    clip_image = ((y-x)/(old_max_range-old_min_range))*(image-old_min_range) + x
+    
+    Output_CLip = np.clip(clip_image,x,y)
+    
+    return Output_CLip.astype(np.uint8)
+
+image = cv.imread("/bmiit/exam/exam001/Downloads/img02.jpg",0)
+
+clipped_img = Img_Clipping(image, 0, 255)
+
+cv.imshow("Original", image)
+cv.imshow("Clipped", clipped_img)
+
+cv.waitKey(0)
+cv.destroyAllWindows()
+
+----------------------------------------------------
+
+(3)
+
+import cv2 as cv
+import numpy as np
+from matplotlib import pyplot as plt
+
+image = cv.imread("/bmiit/exam/exam001/Downloads/img02.jpg",0)
+negative_img = cv.bitwise_not(image)
+
+original_hist = cv.calcHist(image, [0], None, [256], [0,256])
+negative_hist = cv.calcHist(negative_img, [0], None, [256], [0,256])
+
+cv.imshow("Original", image)
+cv.imshow("Negative", negative_img)
+
+plt.Figure()
+plt.title("Original Image")
+plt.xlabel("Bins")
+plt.ylabel("Frequency")
+plt.plot(original_hist)
+plt.show()
+
+plt.Figure()
+plt.title("Negative hist")
+plt.xlabel("Bins")
+plt.ylabel("Frequency")
+plt.plot(negative_hist)
+plt.show()
+
+cv.waitKey(0)
+cv.destroyAllWindows()
+
+
